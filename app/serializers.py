@@ -18,3 +18,23 @@ class Services_ownerseri(serializers.ModelSerializer):
         model=USER_details
         fields=['email','password','date_joined']
 
+#-------------------------------------------------------------------------
+
+
+from rest_framework import serializers
+from .models import USER_Entry, Driver_Entry, Hospital
+
+class USER_EntrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = USER_Entry
+        fields = '__all__'  # Serialize all fields
+
+class Driver_EntrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Driver_Entry
+        fields = '__all__'
+
+class HospitalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Hospital
+        fields = '__all__'

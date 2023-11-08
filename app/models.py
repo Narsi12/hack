@@ -31,13 +31,34 @@ class Entry(models.Model):
 
 
 
-class USER_Entry(models.Model):
-    _id=models.ObjectIdField(auto_created=True, primary_key=True, serialize=True, verbose_name='ID')
+# from django.db import models
+from djongo import models
+
+class CommonFields(models.Model):
     email = models.EmailField()
     password = models.CharField(max_length=138)
+    
+    class Meta:
+        abstract = True
+
+class USER_Entry(CommonFields):
+    _id=models.ObjectIdField(auto_created=True, primary_key=True, serialize=True, verbose_name='ID')
     phone_number = models.CharField(max_length=200)
     emergency_phone_number = models.CharField(max_length=200)
-     
+
+class Driver_Entry(CommonFields):
+    _id=models.ObjectIdField(auto_created=True, primary_key=True, serialize=True, verbose_name='ID')
+    name = models.CharField(max_length=200)
+    hospital_name = models.CharField(max_length=200)
+    license = models.ImageField(upload_to='licenses/', null=True, blank=True)
+    vehicle_num = models.CharField(max_length=255)
+    phone_num = models.CharField(max_length=255)
+
+class Hospital(CommonFields):
+    _id=models.ObjectIdField(auto_created=True, primary_key=True, serialize=True, verbose_name='ID')
+    location = models.CharField(max_length=255)
+    license_img = models.ImageField(upload_to='hospital/', null=True, blank=True)
+    phone = models.CharField(max_length=255)
 
 
 

@@ -262,30 +262,27 @@ class ForgotPassword(APIView):
     
 #------------------------------------------------------------------------------------------------------------------------------------
 
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .models import USER_Entry, Driver_Entry, Hospital
+from .serializers import USER_EntrySerializer, Driver_EntrySerializer, HospitalSerializer
 
+class RegistrationAPIView(APIView):
+    def post(self, request):
+        user_type = request.data.get('user_type')
 
+        if user_type == 'User':
+            serializer = USER_EntrySerializer(data=request.data)
+        elif user_type == 'Driver':
+            serializer = Driver_EntrySerializer(data=request.data)
+        elif user_type == 'Hospital':
+            serializer = HospitalSerializer(data=request.data)
+        else:
+            return Response({"error": "Invalid user_type"}, status=status.HTTP_400_BAD_REQUEST)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

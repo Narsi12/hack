@@ -271,6 +271,19 @@ from .serializers import USER_EntrySerializer, Driver_EntrySerializer, HospitalS
 class RegistrationAPIView(APIView):
     def post(self, request):
         user_type = request.data.get('user_type')
+        password = request.data.get('password')
+        email = request.data.get('email')
+
+        # Hash the password
+        hashed_password = make_password(password)
+        request.data['password'] = hashed_password
+
+        if not email:
+            return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        existing_user = USER_Entry.objects.filter(email=email).first() or Driver_Entry.objects.filter(email=email).first() or Hospital.objects.filter(email=email).first()
+        if existing_user is not None:
+            return JsonResponse({'Message': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
         if user_type == 'User':
             serializer = USER_EntrySerializer(data=request.data)
@@ -286,3 +299,7 @@ class RegistrationAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+
+
+ 

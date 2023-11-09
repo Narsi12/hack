@@ -58,7 +58,7 @@ ROOT_URLCONF = 'myproject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -154,7 +154,14 @@ SWAGGER_SETTINGS = {
     }
 }
 
-
+#SMTP
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'chnarsimha2580@gmail.com'
+EMAIL_HOST_PASSWORD = 'ouyc efoi scaj ugqk'
+DEFAULT_FROM_EMAIL = 'MOURITECH<chnarsimha2580@gmail.com>'
 
 MEDIA_URL = '/media/'
 

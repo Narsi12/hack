@@ -267,6 +267,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import USER_Entry, Driver_Entry, Hospital
 from .serializers import USER_EntrySerializer, Driver_EntrySerializer, HospitalSerializer
+from mail_notification.connection import MailConfig
+from django.core.mail import send_mail
+
 
 class RegistrationAPIView(APIView):
     def post(self, request):
@@ -287,10 +290,19 @@ class RegistrationAPIView(APIView):
 
         if user_type == 'user':
             serializer = USER_EntrySerializer(data=request.data)
+
+
         elif user_type == 'driver':
             serializer = Driver_EntrySerializer(data=request.data)
+            demo=MailConfig(mail_user="harikishansuri1998@gmail.com",password="mita ypfc xjel khyy")
+            demo.send_mail(to_mail=email,subject="text",body=f"Dear user, your account details are being processed.\n Email: {email}")
+            demo.close_conn()
+            
         elif user_type == 'hospital':
             serializer = HospitalSerializer(data=request.data)
+            demo=MailConfig(mail_user="harikishansuri1998@gmail.com",password="mita ypfc xjel khyy")
+            demo.send_mail(to_mail=email,subject="text",body=f"Dear user, your account details are being processed.\n Email: {email}")
+            demo.close_conn()
         else:
             return Response({"error": "Invalid user_type"}, status=status.HTTP_400_BAD_REQUEST)
 

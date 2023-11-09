@@ -41,6 +41,9 @@ class CommonFields(models.Model):
     class Meta:
         abstract = True
 
+
+driver_and_hospital_status=(("pending",'PENDING'),("approved","APPROVED"),("rejected","REJECTED"))
+
 class USER_Entry(CommonFields):
     _id=models.ObjectIdField(auto_created=True, primary_key=True, serialize=True, verbose_name='ID')
     phone_number = models.CharField(max_length=200)
@@ -53,12 +56,14 @@ class Driver_Entry(CommonFields):
     license = models.ImageField(upload_to='users/driving', null=True, blank=True)
     vehicle_num = models.CharField(max_length=255)
     phone_num = models.CharField(max_length=255)
+    status = models.CharField(choices=driver_and_hospital_status,max_length=100,blank=True, null=True,default="pending")
 
 class Hospital(CommonFields):
     _id=models.ObjectIdField(auto_created=True, primary_key=True, serialize=True, verbose_name='ID')
     location = models.CharField(max_length=255)
     license_img = models.ImageField(upload_to='users/hospital/', null=True, blank=True)
     phone = models.CharField(max_length=255)
+    status = models.CharField(choices=driver_and_hospital_status,max_length=100,blank=True, null=True,default="pending")
 
 
 

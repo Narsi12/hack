@@ -57,7 +57,7 @@ class Driver_Entry(CommonFields):
 class Hospital(CommonFields):
     _id=models.ObjectIdField(auto_created=True, primary_key=True, serialize=True, verbose_name='ID')
     location = models.CharField(max_length=255)
-    license_img = models.ImageField(upload_to='users/hospital', null=True, blank=True)
+    license_img = models.ImageField(upload_to='users/hospital/', null=True, blank=True)
     phone = models.CharField(max_length=255)
 
 

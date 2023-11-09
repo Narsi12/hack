@@ -158,4 +158,4 @@ SWAGGER_SETTINGS = {
 
 MEDIA_URL = '/media/'
 
-# MEDIA_ROOT = os.path.join(BASE_DIR, r'D:\new\Online-Delivery-Goods-BE\django_service\user')
+MEDIA_ROOT = os.path.join(BASE_DIR, r'D:\Hack\app\users')

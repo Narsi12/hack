@@ -158,4 +158,4 @@ SWAGGER_SETTINGS = {
 
 MEDIA_URL = '/media/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, r'D:\Hack\app\users')
+MEDIA_ROOT = os.path.join(BASE_DIR, r'D:\hackthon\hack\app\users')

@@ -285,11 +285,11 @@ class RegistrationAPIView(APIView):
         if existing_user is not None:
             return JsonResponse({'Message': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if user_type == 'User':
+        if user_type == 'user':
             serializer = USER_EntrySerializer(data=request.data)
-        elif user_type == 'Driver':
+        elif user_type == 'driver':
             serializer = Driver_EntrySerializer(data=request.data)
-        elif user_type == 'Hospital':
+        elif user_type == 'hospital':
             serializer = HospitalSerializer(data=request.data)
         else:
             return Response({"error": "Invalid user_type"}, status=status.HTTP_400_BAD_REQUEST)

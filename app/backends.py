@@ -8,11 +8,5 @@ from django.contrib.auth.hashers import check_password
 class EmailBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         # UserModel = User()
-        try:
-            user = USER_details.objects.get(email=username)
-        except USER_details.DoesNotExist:
-                raise AuthenticationFailed ("Email is not valid")
-        else:
-            if check_password(password,user.password):
-                return user
-            raise PermissionDenied("Password is not valid")
+        pass
+         

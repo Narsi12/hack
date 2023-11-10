@@ -91,20 +91,37 @@ def on_change(sender, instance: Hospital, **kwargs):
         mail_subject='Congartulations Your Account Is Activated'
         
         demo=MailConfig(mail_user="harikishansuri1998@gmail.com",password="mita ypfc xjel khyy")
-        demo.send_mail(to_mail=email,subject=mail_subject,body='Congartulations Your Account Is Activated ,you can activate your now')
+        demo.content_subtype='html'
+        demo.send_mail(to_mail=email,subject=mail_subject,body='Congartulations Your Account Is Activated ,you can activate your now' )
         demo.close_conn()
 
     elif instance.status == 'rejected':
         mail_subject='Your Account Is Rejected'
         demo=MailConfig(mail_user="harikishansuri1998@gmail.com",password="mita ypfc xjel khyy")
         demo.content_subtype='html'
-        demo.send_mail(to_mail=email,subject=mail_subject,body='Your Account Is Rejected')
+        demo.send_mail(to_mail=email,subject=mail_subject,body='Your Account Is Rejected' )
         demo.close_conn()
 
 
+@receiver(post_save, sender=Driver_Entry)
+def on_change(sender, instance: Driver_Entry, **kwargs):
+    email = instance.email
+    if instance.status == 'approved':
+        mail_subject='Congartulations Your Account Is Activated'
+        
+        demo=MailConfig(mail_user="harikishansuri1998@gmail.com",password="mita ypfc xjel khyy")
+        demo.content_subtype='html'
+        demo.send_mail(to_mail=email,subject=mail_subject,body='Congartulations Your Account Is Activated ,you can activate your now' )
+        demo.close_conn()
 
+    elif instance.status == 'rejected':
+        mail_subject='Your Account Is Rejected'
+        demo=MailConfig(mail_user="harikishansuri1998@gmail.com",password="mita ypfc xjel khyy")
+        demo.content_subtype='html'
+        demo.send_mail(to_mail=email,subject=mail_subject,body='Your Account Is Rejected' )
+        demo.close_conn()
 
-
+ 
 
 
 

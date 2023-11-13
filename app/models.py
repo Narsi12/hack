@@ -54,6 +54,8 @@ class USER_Entry(CommonFields):
     _id=models.ObjectIdField(auto_created=True, primary_key=True, serialize=True, verbose_name='ID')
     phone_number = models.CharField(max_length=200)
     emergency_phone_number = models.CharField(max_length=200)
+    name = models.CharField(max_length=200)
+
 
 class Driver_Entry(CommonFields):
     _id=models.ObjectIdField(auto_created=True, primary_key=True, serialize=True, verbose_name='ID')

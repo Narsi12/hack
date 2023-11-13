@@ -270,7 +270,7 @@ from .serializers import USER_EntrySerializer, Driver_EntrySerializer, HospitalS
 from mail_notification.connection import MailConfig
 from django.core.mail import send_mail
 
-
+#registration api
 class RegistrationAPIView(APIView):
     def post(self, request):
         user_type = request.data.get('user_type')

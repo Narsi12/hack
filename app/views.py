@@ -269,6 +269,8 @@ from .models import USER_Entry, Driver_Entry, Hospital
 from .serializers import USER_EntrySerializer, Driver_EntrySerializer, HospitalSerializer
 from mail_notification.connection import MailConfig
 from django.core.mail import send_mail
+from googlemaps import Client as GoogleMaps
+import requests
 
 
 class RegistrationAPIView(APIView):
@@ -313,5 +315,28 @@ class RegistrationAPIView(APIView):
 
 
 
+class NearHospitalsList(APIView):
+    def get(self, request):
+        latitude = request.data.get("latitude")
+        longitude = request.data.get("longitude")
 
- 
+        api_key = 'AIzaSyBO0HZnIuHmIB7qalDQ-jTsT4bXbkcFLZM'
+        gmaps = GoogleMaps(api_key)
+
+        radius = 5000
+        location = (latitude, longitude)
+
+        url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={latitude},{longitude}&radius={radius}&type=hospital&key={api_key}"
+
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            hospitals_data = response.json()
+
+            if 'results' in hospitals_data:
+                nearby_hospitals = [hospital['name'] for hospital in hospitals_data['results']]
+                return Response({"Nearby Hospitals": nearby_hospitals}, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "No hospital data found in the specified radius."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"message": "Failed to fetch data from Google Places API."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

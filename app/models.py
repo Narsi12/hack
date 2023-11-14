@@ -55,6 +55,7 @@ class USER_Entry(CommonFields):
     phone_number = models.CharField(max_length=200)
     emergency_phone_number = models.CharField(max_length=200)
     name = models.CharField(max_length=200)
+    location = models.CharField(max_length=100)
 
 
 class Driver_Entry(CommonFields):

@@ -91,7 +91,7 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 DATABASES = DATABASES = {
     'default': {
         'ENGINE': 'djongo',   
-        'NAME': 'ambulance_data',
+        'NAME': 'ambulance_tracker',
     }
 }
 

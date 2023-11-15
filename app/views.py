@@ -41,7 +41,7 @@ JWT_REFRESH_TOKEN_EXPIRATION = 1440
 JWT_ALGORITHM = 'HS256'
 
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-mydb = myclient['ambulance_data']
+mydb = myclient['ambulance_tracker']
 mycol3 = mydb['app_user_tokens_details']
 mytokens = mydb['tokens']
 
@@ -125,7 +125,7 @@ class LoginView(APIView):
             return JsonResponse({"message":"invalid data"})
        
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-mydb = myclient["ambulance_data"]
+mydb = myclient["ambulance_tracker"]
 my_col4=mydb["app_user_details"]
 class ChangePassword(CreateAPIView):
     permission_classes = [CustomIsauthenticated]

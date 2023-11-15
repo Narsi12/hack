@@ -9,22 +9,22 @@ from django.core.exceptions import ObjectDoesNotExist
 
 class EmailBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
-
-        try:
-            # Try to get a user from each model
+        pass
+    #     try:
+    #         # Try to get a user from each model
            
-            user = USER_Entry.objects.filter(email=username).first() or Driver_Entry.objects.filter(email=username).first() or Hospital.objects.filter(email=username).first()
+    #         user = USER_Entry.objects.filter(email=username).first() or Driver_Entry.objects.filter(email=username).first() or Hospital.objects.filter(email=username).first()
 
-            # If no user is found, raise AuthenticationFailed
-            if user is None:
-                raise AuthenticationFailed("Email is not valid")
+    #         # If no user is found, raise AuthenticationFailed
+    #         if user is None:
+    #             raise AuthenticationFailed("Email is not valid")
 
-            # Check the password
-            if not check_password(password, user.password):
-                raise PermissionDenied("Password is not valid")
+    #         # Check the password
+    #         if not check_password(password, user.password):
+    #             raise PermissionDenied("Password is not valid")
 
-            return user
+    #         return user
 
-        except ObjectDoesNotExist:
-            # Handle the case when the email doesn't exist in any model
-            raise AuthenticationFailed("Email doesn't exist")
+    #     except ObjectDoesNotExist:
+    #         # Handle the case when the email doesn't exist in any model
+    #         raise AuthenticationFailed("Email doesn't exist")

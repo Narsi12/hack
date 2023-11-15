@@ -340,7 +340,6 @@ class NearHospitalsList(APIView):
                 return Response({"message": "No hospital data found in the specified radius."}, status=status.HTTP_404_NOT_FOUND)
         else:
             return Response({"message": "Failed to fetch data from Google Places API."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
 
 class LoginViewAPIView(APIView):
     def post(self, request):
@@ -388,3 +387,11 @@ class LoginViewAPIView(APIView):
         else:
             logger.error("Invalid data")
             return JsonResponse({"message": "Invalid data"})
+        
+
+from .decorator import address_decorator
+
+class HospitalsLiveLocation(APIView):
+    @address_decorator
+    def get(self, request, latitude, longitude, result):
+        return JsonResponse({"latitude": latitude, "longitude": longitude, "address": result})

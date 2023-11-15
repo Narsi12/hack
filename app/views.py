@@ -41,7 +41,7 @@ JWT_REFRESH_TOKEN_EXPIRATION = 1440
 JWT_ALGORITHM = 'HS256'
 
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-mydb = myclient['ambulance_data']
+mydb = myclient['ambulance_tracker']
 mycol3 = mydb['app_user_tokens_details']
 mytokens = mydb['tokens']
 
@@ -125,7 +125,7 @@ class LoginView(APIView):
             return JsonResponse({"message":"invalid data"})
        
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-mydb = myclient["ambulance_data"]
+mydb = myclient["ambulance_tracker"]
 my_col4=mydb["app_user_details"]
 class ChangePassword(CreateAPIView):
     permission_classes = [CustomIsauthenticated]
@@ -340,7 +340,6 @@ class NearHospitalsList(APIView):
                 return Response({"message": "No hospital data found in the specified radius."}, status=status.HTTP_404_NOT_FOUND)
         else:
             return Response({"message": "Failed to fetch data from Google Places API."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
 
 class LoginViewAPIView(APIView):
     def post(self, request):
@@ -388,3 +387,11 @@ class LoginViewAPIView(APIView):
         else:
             logger.error("Invalid data")
             return JsonResponse({"message": "Invalid data"})
+        
+
+from .decorator import address_decorator
+
+class HospitalsLiveLocation(APIView):
+    @address_decorator
+    def get(self, request, latitude, longitude, result):
+        return JsonResponse({"latitude": latitude, "longitude": longitude, "address": result})

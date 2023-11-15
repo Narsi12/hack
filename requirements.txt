@@ -1,6 +1,5 @@
 django
 django-cors-headers
-rest_framework
 djangorestframework
 djongo
 mouritech-mail-notification==0.0.2   
@@ -9,3 +8,6 @@ drf_yasg
 setuptools
 googlemaps
 pillow
+pymongo==3.12.3
+geopy
+

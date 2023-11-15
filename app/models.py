@@ -15,17 +15,7 @@ class USER_details(models.Model):
     user = models.CharField(max_length=200,default="user")
     date_joined = models.DateTimeField(auto_now_add=True)
 
-    
-class Post(models.Model):
-    _id= models.ObjectIdField()
-    user_name  = models.CharField(max_length=30)
-    car_name   = models.CharField(max_length=20)
-    car_number = models.CharField(max_length=10)
-    service_date = models.DateTimeField(auto_now_add=True)
-    phone_no   = models.CharField(max_length=10)
 
-class Entry(models.Model):
-    car = models.EmbeddedField(model_container=Post)
 
 #----------------------------------------------------------------------------------------------------------------------------------------
 

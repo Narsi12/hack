@@ -3,7 +3,7 @@ from .models import USER_details,USER_Entry,Driver_Entry,Hospital
 
 
 class DriverEntryAdmin(admin.ModelAdmin):
-    list_display = ['name', 'hospital_name', 'vehicle_num', 'phone_num', 'location','email'
+    list_display = ['name', 'hospital_name', 'vehicle_num', 'phone_num','email'
     ]
 
 admin.site.register(Driver_Entry, DriverEntryAdmin)

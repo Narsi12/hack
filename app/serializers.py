@@ -8,11 +8,7 @@ class USER_Serializer(serializers.ModelSerializer):
     class Meta:
         model = USER_details
         fields = ['email','password']
-
-
-
-
-
+ 
 class Services_ownerseri(serializers.ModelSerializer):
     class Meta:
         model=USER_details

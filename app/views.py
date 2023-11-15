@@ -42,7 +42,7 @@ JWT_ALGORITHM = 'HS256'
 
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
 mydb = myclient['ambulance_data']
-mycol3 = mydb['app_user_details']
+mycol3 = mydb['app_user_tokens_details']
 mytokens = mydb['tokens']
 
 
@@ -269,8 +269,10 @@ from .models import USER_Entry, Driver_Entry, Hospital
 from .serializers import USER_EntrySerializer, Driver_EntrySerializer, HospitalSerializer
 from mail_notification.connection import MailConfig
 from django.core.mail import send_mail
+from googlemaps import Client as GoogleMaps
+import requests
 
-
+#registration api
 class RegistrationAPIView(APIView):
     def post(self, request):
         user_type = request.data.get('user_type')
@@ -313,5 +315,76 @@ class RegistrationAPIView(APIView):
 
 
 
+class NearHospitalsList(APIView):
+    def get(self, request):
+        latitude = request.data.get("latitude")
+        longitude = request.data.get("longitude")
 
- 
+        api_key = 'AIzaSyBO0HZnIuHmIB7qalDQ-jTsT4bXbkcFLZM'
+        gmaps = GoogleMaps(api_key)
+
+        radius = 5000
+        location = (latitude, longitude)
+
+        url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={latitude},{longitude}&radius={radius}&type=hospital&key={api_key}"
+
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            hospitals_data = response.json()
+
+            if 'results' in hospitals_data:
+                nearby_hospitals = [hospital['name'] for hospital in hospitals_data['results']]
+                return Response({"Nearby Hospitals": nearby_hospitals}, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "No hospital data found in the specified radius."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"message": "Failed to fetch data from Google Places API."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+class LoginViewAPIView(APIView):
+    def post(self, request):
+        data = request.data
+        email = data.get('email', None)
+        password = data.get('password', None)
+        user = EmailBackend.authenticate(self, request, username=email, password=password)
+
+        if user is not None:
+            # Generate access token
+            token_payload = {
+                'user_id': str(user._id),
+                'exp': datetime.utcnow() + timedelta(minutes=JWT_ACCESS_TOKEN_EXPIRATION),
+                'iat': datetime.utcnow()
+            }
+            access_token = jwt.encode(token_payload, JWT_SECRET_KEY, JWT_ALGORITHM).decode('utf-8')
+
+            # Generate refresh token
+            refresh_token_payload = {
+                'user_id': str(user._id),
+                'exp': datetime.utcnow() + timedelta(days=JWT_REFRESH_TOKEN_EXPIRATION),
+                'iat': datetime.utcnow()
+            }
+            refresh_token = jwt.encode(refresh_token_payload, JWT_SECRET_KEY, JWT_ALGORITHM).decode('utf-8')
+
+            # Store tokens in the database
+            mytokens.insert_one({
+                "user_id": str(user._id),
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "active": True,
+                "created_date": datetime.utcnow()
+            })
+
+            logger.info({"user successfully authenticated: %s", email})
+
+            # Return JSON response with decoded tokens
+            return JsonResponse({
+                "status": "success",
+                "msg": "user successfully authenticated",
+                "token": access_token,
+                "refresh_token": refresh_token,
+                "email": email
+            })
+        else:
+            logger.error("Invalid data")
+            return JsonResponse({"message": "Invalid data"})

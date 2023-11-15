@@ -146,6 +146,7 @@ REST_FRAMEWORK = {
 AUTHENTICATION_BACKENDS = [
     'app.backends.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
+    
 ]
 
 

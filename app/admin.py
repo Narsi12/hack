@@ -7,7 +7,7 @@ class DriverEntryAdmin(admin.ModelAdmin):
     ]
 
 admin.site.register(Driver_Entry, DriverEntryAdmin)
-
+#user_details
 admin.site.register(USER_details)
 admin.site.register(USER_Entry)
 # admin.site.register(Driver_Entry)

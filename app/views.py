@@ -349,7 +349,7 @@ class LoginViewAPIView(APIView):
         email = data.get('email', None)
         password = data.get('password', None)
         user = EmailBackend.authenticate(self, request, username=email, password=password)
-
+        # user = USER_Entry.objects.filter(email=email).first() or Driver_Entry.objects.filter(email=email).first() or Hospital.objects.filter(email=email).first()
         if user is not None:
             # Generate access token
             token_payload = {
@@ -357,7 +357,7 @@ class LoginViewAPIView(APIView):
                 'exp': datetime.utcnow() + timedelta(minutes=JWT_ACCESS_TOKEN_EXPIRATION),
                 'iat': datetime.utcnow()
             }
-            access_token = jwt.encode(token_payload, JWT_SECRET_KEY, JWT_ALGORITHM).decode('utf-8')
+            access_token = jwt.encode(token_payload, JWT_SECRET_KEY, JWT_ALGORITHM)
 
             # Generate refresh token
             refresh_token_payload = {
@@ -365,7 +365,7 @@ class LoginViewAPIView(APIView):
                 'exp': datetime.utcnow() + timedelta(days=JWT_REFRESH_TOKEN_EXPIRATION),
                 'iat': datetime.utcnow()
             }
-            refresh_token = jwt.encode(refresh_token_payload, JWT_SECRET_KEY, JWT_ALGORITHM).decode('utf-8')
+            refresh_token = jwt.encode(refresh_token_payload, JWT_SECRET_KEY, JWT_ALGORITHM)
 
             # Store tokens in the database
             mytokens.insert_one({

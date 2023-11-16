@@ -336,8 +336,23 @@ class NearHospitalsList(APIView):
             hospitals_data = response.json()
 
             if 'results' in hospitals_data:
-                nearby_hospitals = [hospital['name'] for hospital in hospitals_data['results']]
-                return Response({"Nearby Hospitals": nearby_hospitals}, status=status.HTTP_200_OK)
+                nearby_hospitals = hospitals_data['results']
+
+                print("\nNearby Hospitals:")
+                hospitals_json = []
+                for hospital in nearby_hospitals:
+                    hospital_name = hospital['name']
+                    hospital_location = hospital['geometry']['location']
+                    hospital_lat = hospital_location['lat']
+                    hospital_lng = hospital_location['lng']
+                    hospital_info = {
+                        "name": hospital_name,
+                        "latitude": hospital_lat,
+                        "longitude": hospital_lng
+                    }
+                    hospitals_json.append(hospital_info)
+
+                return Response(hospitals_json, status=status.HTTP_200_OK)
             else:
                 return Response({"message": "No hospital data found in the specified radius."}, status=status.HTTP_404_NOT_FOUND)
         else:

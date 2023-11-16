@@ -11,8 +11,11 @@ class EmailBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         try:
             # Try to get a user from each model
-           
-            user = USER_Entry.objects.filter(email=username).first() or Driver_Entry.objects.filter(email=username).first() or Hospital.objects.filter(email=username).first()
+            user = (
+                USER_Entry.objects.filter(email=username).first() or
+                Driver_Entry.objects.filter(email=username).first() or
+                Hospital.objects.filter(email=username).first()
+            )
 
             # If no user is found, raise AuthenticationFailed
             if user is None:
@@ -24,10 +27,6 @@ class EmailBackend(ModelBackend):
 
             return user
 
-
         except ObjectDoesNotExist:
-                #   Handle the case when the email doesn't exist in any model
+            # Handle the case when the email doesn't exist in any model
             raise AuthenticationFailed("Email doesn't exist")
-
-       
- 

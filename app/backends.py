@@ -29,7 +29,5 @@ class EmailBackend(ModelBackend):
                 #   Handle the case when the email doesn't exist in any model
             raise AuthenticationFailed("Email doesn't exist")
 
-        except ObjectDoesNotExist:
-            # Handle the case when the email doesn't exist in any model
-            raise AuthenticationFailed("Email doesn't exist")
+       
  

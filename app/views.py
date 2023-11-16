@@ -280,8 +280,10 @@ class RegistrationAPIView(APIView):
         email = request.data.get('email')
 
         # Hash the password
-        hashed_password = make_password(password)
-        request.data['password'] = hashed_password
+        hashed_password = make_password(password) 
+        # request.data['password'] = hashed_password
+        mutable_data = request.data.copy()
+        mutable_data['password'] = hashed_password
 
         if not email:
             return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)

@@ -1,0 +1,9 @@
+hospital_info={}
+                for hospital in nearby_hospitals:
+                    hospital_name = hospital['name']
+                    hospital_location = hospital['geometry']['location']
+                    hospital_lat = hospital_location['lat']
+                    hospital_lng = hospital_location['lng']
+                    hospital_info["name"]=hospital_name,
+                    hospital_info["latitude"]=hospital_lat,
+                    hospital_info["longitude"]=hospital_lng

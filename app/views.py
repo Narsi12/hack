@@ -342,13 +342,17 @@ class NearHospitalsList(APIView):
                 hospitals_json = []
                 for hospital in nearby_hospitals:
                     hospital_name = hospital['name']
+                    hospital_opening_hours = hospital.get('opening_hours', {}).get('open_now', None)
+
                     hospital_location = hospital['geometry']['location']
                     hospital_lat = hospital_location['lat']
                     hospital_lng = hospital_location['lng']
+                    
                     hospital_info = {
                         "name": hospital_name,
                         "latitude": hospital_lat,
-                        "longitude": hospital_lng
+                        "longitude": hospital_lng,
+                        "open_now": str(hospital_opening_hours) if hospital_opening_hours else 'Not available'
                     }
                     hospitals_json.append(hospital_info)
 
@@ -364,7 +368,6 @@ class LoginViewAPIView(APIView):
         email = data.get('email', None)
         password = data.get('password', None)
         user = EmailBackend.authenticate(self, request, username=email, password=password)
-        # user = USER_Entry.objects.filter(email=email).first() or Driver_Entry.objects.filter(email=email).first() or Hospital.objects.filter(email=email).first()
         if user is not None:
             # Generate access token
             token_payload = {

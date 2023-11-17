@@ -316,7 +316,7 @@ class RegistrationAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
+my_hospital=mydb["app_hospital"]
 class NearHospitalsList(APIView):
     def get(self, request):
         latitude = request.data.get("latitude")
@@ -334,25 +334,30 @@ class NearHospitalsList(APIView):
 
         if response.status_code == 200:
             hospitals_data = response.json()
-
+        
             if 'results' in hospitals_data:
                 nearby_hospitals = hospitals_data['results']
-
                 print("\nNearby Hospitals:")
                 hospitals_json = []
                 for hospital in nearby_hospitals:
                     hospital_name = hospital['name']
                     hospital_opening_hours = hospital.get('opening_hours', {}).get('open_now', None)
-
                     hospital_location = hospital['geometry']['location']
                     hospital_lat = hospital_location['lat']
                     hospital_lng = hospital_location['lng']
-                    
+
+                    ambulance_avb = my_hospital.find_one({"hospital_name":hospital_name})
+                    if ambulance_avb is not None:
+                        ambulance = "False" if ambulance_avb['no_of_ambulances'] =="0" else "True"
+                    else:
+                        ambulance = "hospital not rejected"
+
                     hospital_info = {
                         "name": hospital_name,
                         "latitude": hospital_lat,
                         "longitude": hospital_lng,
-                        "open_now": str(hospital_opening_hours) if hospital_opening_hours else 'Not available'
+                        "open_now": str(hospital_opening_hours) if hospital_opening_hours else 'Not available',
+                        "ambulance_available": ambulance
                     }
                     hospitals_json.append(hospital_info)
 

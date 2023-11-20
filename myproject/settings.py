@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5tbx%9d4h0=!6natr_d9*5jay*1a)2waho)zig6d*0^_5ry=p('
+SECRET_KEY = 'django-insecure-%u%*7d#@p^q+fd*w!vd^c2t%%mjnga%k#m$hec!7&c#5+@ulo@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -29,6 +29,7 @@ DEBUG = True
 ALLOWED_HOSTS = ["*"]
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
+
 
 # Application definition
 
@@ -41,8 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'app',
-    'rest_framework',
-    'rest_framework.authtoken'
+    'drf_yasg',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [
@@ -61,7 +62,7 @@ ROOT_URLCONF = 'myproject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -87,13 +88,13 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 #     }
 # }
 
-
 DATABASES = DATABASES = {
     'default': {
-        'ENGINE': 'djongo',   
+        'ENGINE': 'djongo',
         'NAME': 'ambulance_tracker',
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -137,28 +138,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'app.authentication.JWTAuthentication',
-    ),
-}
-
-AUTHENTICATION_BACKENDS = [
-    'app.backends.EmailBackend',
-    'django.contrib.auth.backends.ModelBackend',
-    
-]
-
-
-SWAGGER_SETTINGS = {
-    'SECURITY_DEFINATIONS':{
-        'basic':{
-            'type': 'basic'
-        }
-    }
-}
-
-# SMTP 
+#SMTP
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
@@ -167,6 +147,26 @@ EMAIL_HOST_USER = 'chnarsimha2580@gmail.com'
 EMAIL_HOST_PASSWORD = 'ouyc efoi scaj ugqk'
 DEFAULT_FROM_EMAIL = 'MOURITECH<chnarsimha2580@gmail.com>'
 
+JWT_SETTINGS = {
+    'JWT_SECRET_KEY': 'django-insecure-6i9o@jxm94t!sao=x%*6yhx9fyht^62ir(wzw5sre^*a%lk02',
+    'JWT_ACCESS_TOKEN_EXPIRATION': 60,
+    'JWT_REFRESH_TOKEN_EXPIRATION': 1440,
+    'JWT_ALGORITHM': 'HS256',
+    'JWT_REFRESH_SECRET_KEY':'Narsimha12345@#$KLShhddid:h97676tgfjhgfd(hghghgs<>loih$*UH'
+}
+
+
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'app.authentication.JWTAuthentication',
+    ),
+}
+
+
 MEDIA_URL = '/media/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, r'D:\AI.3_hackathon\patient_ambulence_relation\app\users')
+
 
 MEDIA_ROOT = os.path.join(BASE_DIR, r'D:\hackthon\hack\app\users')

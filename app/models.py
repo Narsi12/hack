@@ -46,6 +46,8 @@ class USER_Entry(CommonFields):
     emergency_phone_number = models.CharField(max_length=200)
     name = models.CharField(max_length=200)
     location = models.CharField(max_length=100)
+    user_type = models.CharField(max_length=20, default='user')
+
 
 
 class Driver_Entry(CommonFields):
@@ -58,6 +60,8 @@ class Driver_Entry(CommonFields):
     id_card = models.ImageField(upload_to='ID/driving', null=True, blank=True)
     hospital_license = models.ImageField(upload_to='hospital_license/driving', null=True, blank=True)
     status = models.CharField(choices=driver_and_hospital_status,max_length=100,blank=True, null=True,default="pending")
+    user_type = models.CharField(max_length=20, default='driver')
+
 
 class Hospital(CommonFields):
     _id=models.ObjectIdField(auto_created=True, primary_key=True, serialize=True, verbose_name='ID')
@@ -70,6 +74,8 @@ class Hospital(CommonFields):
     supervisor_id_card=models.ImageField(upload_to='hospital_license/hospital/', null=True, blank=True)
     status = models.CharField(choices=driver_and_hospital_status,max_length=100,blank=True, null=True,default="pending")
     hospital_name = models.CharField(max_length=200)
+    user_type = models.CharField(max_length=20, default='hospital')
+
 
 
 

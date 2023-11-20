@@ -2,6 +2,8 @@
 
 # api_key = 'AIzaSyBO0HZnIuHmIB7qalDQ-jTsT4bXbkcFLZM' 
 from geopy.geocoders import GoogleV3
+import requests
+
 
 def address_decorator(func):
     def wrapper(self, request, *args, **kwargs):
@@ -26,7 +28,18 @@ def address_decorator(func):
     return wrapper
 
 
-
+def calculate_distance(lat1, lon1, lat2, lon2):
+   
+    google_api="AIzaSyBO0HZnIuHmIB7qalDQ-jTsT4bXbkcFLZM"
+    url= f"https://maps.googleapis.com/maps/api/directions/json?origin={lat1},{lon1}&destination={lat2},{lon2}&key={google_api}"
+    response = requests.get(url)
+    data = response.json()
+    if data["status"] == "OK":
+        distance = data["routes"][0]["legs"][0]["distance"]["text"]
+        maps_link = f"https://www.google.com/maps/dir/?api=1&origin={lat1},{lon1}&destination={lat2},{lon2}"
+        return distance, maps_link
+    else:
+        return None
 
 
 # Example coordinates (replace with user input or actual values)

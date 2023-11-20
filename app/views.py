@@ -260,7 +260,7 @@ class ForgotPassword(APIView):
             return JsonResponse({"message":"invalid data"})
         
     
-#------------------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------------------------------
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -271,6 +271,17 @@ from mail_notification.connection import MailConfig
 from django.core.mail import send_mail
 from googlemaps import Client as GoogleMaps
 import requests
+from .decorator import calculate_distance
+
+
+myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+mydb = myclient["ambulance_tracker"]
+mycol1 = mydb['app_driver_entry']
+mycol2 = mydb['app_hospital']
+mycol3 = mydb['app_user_entry']
+tokens = mydb['tokens']
+
+
 
 #registration api
 class RegistrationAPIView(APIView):
@@ -279,14 +290,16 @@ class RegistrationAPIView(APIView):
         password = request.data.get('password')
         email = request.data.get('email')
 
-        # Hash the password
-        hashed_password = make_password(password) 
-        # request.data['password'] = hashed_password
-        mutable_data = request.data.copy()
-        mutable_data['password'] = hashed_password
-
+       
         if not email:
             return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+         # Hash the password
+        hashed_password = make_password(password) 
+        request.data['password'] = hashed_password
+        # mutable_data = request.data.copy()
+        # mutable_data['password'] = hashed_password
+
         
         existing_user = USER_Entry.objects.filter(email=email).first() or Driver_Entry.objects.filter(email=email).first() or Hospital.objects.filter(email=email).first()
         if existing_user is not None:
@@ -316,7 +329,59 @@ class RegistrationAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-my_hospital=mydb["app_hospital"]
+class Login_View(APIView):
+    def post(self,request):
+        data = request.data
+        email = data.get('email',None)
+        password = data.get('password',None)
+
+        user=EmailBackend.authenticate(self, request, username=email, password=password)
+        if user is not None:
+            token_payload = {
+                'user_id': str(user._id),
+                'exp': datetime.utcnow() + timedelta(minutes=settings.JWT_SETTINGS['JWT_ACCESS_TOKEN_EXPIRATION']),
+                'iat': datetime.utcnow()
+                }
+            access_token = jwt.encode(token_payload, settings.JWT_SETTINGS["JWT_SECRET_KEY"], settings.JWT_SETTINGS["JWT_ALGORITHM"])
+
+            refresh_token_payload = {
+                'user_id': str(user._id),
+                'exp': datetime.utcnow() + timedelta(days=settings.JWT_SETTINGS['JWT_REFRESH_TOKEN_EXPIRATION']),
+                'iat': datetime.utcnow()
+                }
+            refresh_token = jwt.encode(refresh_token_payload, settings.JWT_SETTINGS["JWT_REFRESH_SECRET_KEY"], settings.JWT_SETTINGS["JWT_ALGORITHM"])
+
+            tokens.insert_one({
+                "user_id":str(user._id),
+                "access_token":access_token,
+                "refresh_token":refresh_token,
+                "active":True,
+                "created_date":datetime.utcnow()
+            })
+
+            collections = [mycol1, mycol2, mycol3]
+
+            for collection in collections:
+                details = collection.find_one({"email": email})
+                if details:
+                    usertype = details.get('user_type')
+            
+            # logedin = details['logged_in']
+
+            return JsonResponse({
+                    "status": "success",
+                    "msg": "user successfully authenticated",
+                    "token": access_token,
+                    "refresh_token": refresh_token,
+                    "email":email,
+                    "usertype":usertype
+                    # "loggedin":logedin
+                })
+        else:
+            return JsonResponse({"message":"invalid data"})
+
+
+
 class NearHospitalsList(APIView):
     def get(self, request):
         latitude = request.data.get("latitude")
@@ -346,7 +411,7 @@ class NearHospitalsList(APIView):
                     hospital_lat = hospital_location['lat']
                     hospital_lng = hospital_location['lng']
 
-                    ambulance_avb = my_hospital.find_one({"hospital_name":hospital_name})
+                    ambulance_avb = mycol2.find_one({"hospital_name":hospital_name})
                     if ambulance_avb is not None:
                         ambulance = "False" if ambulance_avb['no_of_ambulances'] =="0" else "True"
                     else:
@@ -367,51 +432,6 @@ class NearHospitalsList(APIView):
         else:
             return Response({"message": "Failed to fetch data from Google Places API."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class LoginViewAPIView(APIView):
-    def post(self, request):
-        data = request.data
-        email = data.get('email', None)
-        password = data.get('password', None)
-        user = EmailBackend.authenticate(self, request, username=email, password=password)
-        if user is not None:
-            # Generate access token
-            token_payload = {
-                'user_id': str(user._id),
-                'exp': datetime.utcnow() + timedelta(minutes=JWT_ACCESS_TOKEN_EXPIRATION),
-                'iat': datetime.utcnow()
-            }
-            access_token = jwt.encode(token_payload, JWT_SECRET_KEY, JWT_ALGORITHM)
-
-            # Generate refresh token
-            refresh_token_payload = {
-                'user_id': str(user._id),
-                'exp': datetime.utcnow() + timedelta(days=JWT_REFRESH_TOKEN_EXPIRATION),
-                'iat': datetime.utcnow()
-            }
-            refresh_token = jwt.encode(refresh_token_payload, JWT_SECRET_KEY, JWT_ALGORITHM)
-
-            # Store tokens in the database
-            mytokens.insert_one({
-                "user_id": str(user._id),
-                "access_token": access_token,
-                "refresh_token": refresh_token,
-                "active": True,
-                "created_date": datetime.utcnow()
-            })
-
-            logger.info({"user successfully authenticated: %s", email})
-
-            # Return JSON response with decoded tokens
-            return JsonResponse({
-                "status": "success",
-                "msg": "user successfully authenticated",
-                "token": access_token,
-                "refresh_token": refresh_token,
-                "email": email
-            })
-        else:
-            logger.error("Invalid data")
-            return JsonResponse({"message": "Invalid data"})
         
 
 from .decorator import address_decorator
@@ -420,3 +440,78 @@ class HospitalsLiveLocation(APIView):
     @address_decorator
     def get(self, request, latitude, longitude, result):
         return JsonResponse({"latitude": latitude, "longitude": longitude, "address": result})
+
+
+
+# distance from hospital panding
+
+
+class get_hospital_details(APIView):
+    def get(self,request,hospital_name=None):
+        data = request.data
+        lat1 = data.get('lat1')
+        lon1 = data.get('lon1')
+        lat2 = data.get('lat2')
+        lon2 = data.get('lon2')
+        try:
+            if lat1 is None or lon1 is None or lat2 is None or lon2 is None:
+                return Response({"message": "Latitude or longitude values are missing."}, status=400)
+            distance,maps_link = calculate_distance(lat1, lon1, lat2, lon2)
+
+            if distance is not None:
+                if get_hospital_details is not None:
+                    data =mycol2.find_one({"hospital_name":hospital_name})
+
+                    response ={
+                        "hospital_name":hospital_name,
+                        "address": data['location'],
+                        "mobile":data["mobile"],
+                        "landline":data["landline"],
+                        "no_of_ambulances":data["no_of_ambulances"],
+                        "distance": distance,
+                        "maps_link":maps_link
+                    }
+                    return Response(response, status=status.HTTP_200_OK)
+                else:
+                    return Response({"message": "No hospital data found in the specified data."}, status=status.HTTP_404_NOT_FOUND)
+       
+            else:
+                return Response({"message": "Failed to calculate distance."}, status=500)
+            
+        except Exception as e:
+            logger.error(str(e))
+            raise APIException(str(e))
+        
+
+from .permissions import CustomIsauthenticated, DriverCustomIsauthenticated, HospitalCustomIsauthenticated
+# views.py
+class Userprofileview(APIView):
+    def get(self, request, user_type=None):
+        try:
+            user_id = ObjectId(request.user._id)
+
+            if user_type is not None:
+                if user_type == 'user':
+                    self.permission_classes = [CustomIsauthenticated]
+                    user = mycol3.find_one({"_id": user_id})
+                    print(user_id,"kkkkkkkkkkkkkkkkk")
+                    print(user,"k---------------------")
+                elif user_type == 'driver':
+                    self.permission_classes = [DriverCustomIsauthenticated]
+                    user = mycol1.find_one({"_id": user_id})
+                elif user_type == 'hospital':
+                    self.permission_classes = [HospitalCustomIsauthenticated]
+                    user = mycol2.find_one({"_id": user_id})
+                else:
+                    return Response({"error": "Invalid user_type"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({"message": "user_type values are missing."}, status=400)
+
+            if user is not None:
+                user['_id'] = str(user['_id'])
+                logger.info({"request satisfyed"})
+                return Response({"Data": user}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error({str(e)})
+            return Response({"error": str(e)}, status=500)

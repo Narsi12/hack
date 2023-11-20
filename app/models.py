@@ -45,8 +45,8 @@ class USER_Entry(CommonFields):
     phone_number = models.CharField(max_length=200)
     emergency_phone_number = models.CharField(max_length=200)
     name = models.CharField(max_length=200)
-    location = models.CharField(max_length=100)
     user_type = models.CharField(max_length=20, default='user')
+    location = models.JSONField()
 
 
 
@@ -65,7 +65,6 @@ class Driver_Entry(CommonFields):
 
 class Hospital(CommonFields):
     _id=models.ObjectIdField(auto_created=True, primary_key=True, serialize=True, verbose_name='ID')
-    location = models.CharField(max_length=255)
     license_img = models.ImageField(upload_to='users/hospital/', null=True, blank=True)
     landline = models.CharField(max_length=255)
     mobile = models.CharField(max_length=255)
@@ -75,6 +74,8 @@ class Hospital(CommonFields):
     status = models.CharField(choices=driver_and_hospital_status,max_length=100,blank=True, null=True,default="pending")
     hospital_name = models.CharField(max_length=200)
     user_type = models.CharField(max_length=20, default='hospital')
+    location = models.JSONField((dict))
+
 
 
 

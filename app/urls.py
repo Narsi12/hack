@@ -1,6 +1,6 @@
 from django.urls import include, path
 from rest_framework import routers
-from .views import  ChangePassword,Register,LoginView,LogoutView,ForgotPassword,NewPassordGenerate ,RegistrationAPIView,NearHospitalsList,Login_View,HospitalsLiveLocation
+from .views import  ChangePassword,LogoutView,ForgotPassword,NewPassordGenerate ,RegistrationAPIView,NearHospitalsList,Login_View,HospitalsLiveLocation
 from .views import get_hospital_details,Userprofileview
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -25,13 +25,11 @@ schema_view = get_schema_view(
 
 
 urlpatterns = [
-   
-   path(r'register/', Register.as_view(), name='Register'),
    path(r'register_user/', RegistrationAPIView.as_view(), name='Register'),#new added
    path(r'near_hospitals_list/', NearHospitalsList.as_view(), name='Register'), #new added
-   path(r'login/', LoginView.as_view(), name='LoginView'),
+   
    path(r'login_view/', Login_View.as_view(), name='LoginView'), #new added
-   path(r'HospitalsLiveLocation/',HospitalsLiveLocation.as_view(),name='HospitalsLivelocatio'),#new added
+   path(r'get_address_from_long_lat/',HospitalsLiveLocation.as_view(),name='HospitalsLivelocatio'),#new added
    path(r'get_hospital_details/<str:hospital_name>',get_hospital_details.as_view(),name='GetHospitalsDetails'),#new added
    path(r'logout/', LogoutView.as_view(),name='Logout'),
    path(r'Userprofileview/<str:user_type>',Userprofileview.as_view(),name='Userprofileview'),#new added

@@ -22,6 +22,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 import pymongo
 import datetime
+import secrets
 from .backends import EmailBackend
 from datetime import datetime, timedelta
 from rest_framework.exceptions import AuthenticationFailed
@@ -29,110 +30,32 @@ from bson import ObjectId
 from .permissions import CustomIsauthenticated
 from django.contrib.auth.hashers import make_password, check_password
 from django.utils.decorators import method_decorator
+from rest_framework.exceptions import APIException
 from .utils import token_required
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.mail import EmailMessage
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-JWT_SECRET_KEY = 'vqua1i2qh8&i!w&mfkeo^uex0v*(u)08x-x!q)ggv!+k94rxxy'
+JWT_SECRET_KEY = 'django-insecure-6i9o@jxm94t!sao=x%*6yhx9fyht^62ir(wzw5sre^*a%lk02'
 JWT_ACCESS_TOKEN_EXPIRATION = 60
 JWT_REFRESH_TOKEN_EXPIRATION = 1440
 JWT_ALGORITHM = 'HS256'
 
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-mydb = myclient['ambulance_tracker']
-mycol3 = mydb['app_user_tokens_details']
-mytokens = mydb['tokens']
-
-
-import secrets
-
-#Narsimha    
-
-# logger = logging.getLogger("django_service.service.views")
-logger = logging.getLogger("django")
-
-
-class Register(APIView):
-    def post(self, request, format=None):
-        serializer = USER_Serializer(data=json.loads(request.body))
-        # import pdb;pdb.set_trace()
-        if serializer.is_valid():
-            data = serializer.validated_data
-            password = data['password']
-            hased_password = make_password(password)
-            email = data['email']
-            existing_user = USER_details.objects.filter(email=email).first()
-            if existing_user is not None:
-                logger.warning("Email already exists")
-                return JsonResponse({'Message': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                logger.error(f"Invalid data submitted: {serializer.errors}")
-
-                serializer.save(password=hased_password)
-                logger.info('User created successfully:%s',email)
-                return JsonResponse({'Message': 'User created successfully'}, status=status.HTTP_201_CREATED)
-        else:
-            logger.error("An error occurred while processing the request")
-            return JsonResponse(serializer.errors , status=status.HTTP_400_BAD_REQUEST)
-
-
-
-class LoginView(APIView):
-    def post(self,request):
-        data = request.data
-        email = data.get('email',None)
-        password = data.get('password',None)
-        user=EmailBackend.authenticate(self, request, username=email, password=password)
-        if user is not None:
-            token_payload = {
-                'user_id': str(user._id),
-                'exp': datetime.utcnow() + timedelta(minutes=JWT_ACCESS_TOKEN_EXPIRATION),
-                'iat': datetime.utcnow()
-                }
-            access_token = jwt.encode(token_payload, JWT_SECRET_KEY, JWT_ALGORITHM)
-
-            refresh_token_payload = {
-                'user_id': str(user._id),
-                'exp': datetime.utcnow() + timedelta(days=JWT_REFRESH_TOKEN_EXPIRATION),
-                'iat': datetime.utcnow()
-                }
-            refresh_token = jwt.encode(refresh_token_payload, JWT_SECRET_KEY, JWT_ALGORITHM)
-
-            mytokens.insert_one({
-                "user_id":str(user._id),
-                "access_token":access_token,
-                "refresh_token":refresh_token,
-                "active":True,
-                "created_date":datetime.utcnow()
-            })
-
-            details = mycol3.find_one({"email":email})
-            logedin = details['logged_in']
-            user    = details['user']
-            logger.info({"user successfully authenticated: %s",email})
-            return JsonResponse({
-                    "status": "success",
-                    "msg": "user successfully authenticated",
-                    "token": access_token,
-                    "refresh_token": refresh_token,
-                    "user":user,
-                    "loggedin":logedin
-                })
-        else:
-            logger.error(f"invalid data")
-            return JsonResponse({"message":"invalid data"})
-       
-myclient = pymongo.MongoClient("mongodb://localhost:27017/")
 mydb = myclient["ambulance_tracker"]
-my_col4=mydb["app_user_details"]
+mycol1 = mydb['app_driver_entry']
+mycol2 = mydb['app_hospital']
+mycol3 = mydb['app_user_entry']
+tokens = mydb['tokens']
+
+logger = logging.getLogger("django")    
 class ChangePassword(CreateAPIView):
     permission_classes = [CustomIsauthenticated]
     @method_decorator(token_required)
     def post(self,request):
         user_id= ObjectId(request.user._id)
-        user = my_col4.find_one({"_id":user_id}) 
+        user = mycol1.find_one({"_id":user_id}) 
         data = request.data
         email = user['email']
         oldpassword = data['password']
@@ -176,7 +99,6 @@ class NewPassordGenerate(CreateAPIView):
         logger.info("Password changed successfully")
         return Response({'success': 'Password changed successfully'}, status=status.HTTP_200_OK)
     
-from rest_framework.exceptions import APIException
 
 class LogoutView(APIView):
     permission_classes = [CustomIsauthenticated]
@@ -192,7 +114,7 @@ class LogoutView(APIView):
                 raise APIException("Authorization header is missing")
 
             a_token = auth_header.split()[1]
-            user_data = mytokens.find({})  # here we are getting all token collection information
+            user_data = tokens.find({})  # here we are getting all token collection information
             information = []
             
             for info in user_data:
@@ -200,9 +122,9 @@ class LogoutView(APIView):
                     # if token created date is greater than or equal to 1 day, remove the token from collection
                     information.append(info['_id'])
 
-            mytokens.remove({"_id": {"$in": information}})
+            tokens.remove({"_id": {"$in": information}})
             
-            mytokens.update(
+            tokens.update(
                 {"user_id": str(user_id), "access_token": a_token},
                 {"$set": {"active": False}}
             )
@@ -286,6 +208,7 @@ tokens = mydb['tokens']
 #registration api
 class RegistrationAPIView(APIView):
     def post(self, request):
+        # import pdb;pdb.set_trace()
         user_type = request.data.get('user_type')
         password = request.data.get('password')
         email = request.data.get('email')
@@ -316,6 +239,9 @@ class RegistrationAPIView(APIView):
             demo.close_conn()
             
         elif user_type == 'hospital':
+            location_data_str = request.data.get('location')
+            location_data = json.loads(location_data_str)
+            request.data['location'] = location_data
             serializer = HospitalSerializer(data=request.data)
             demo=MailConfig(mail_user="harikishansuri1998@gmail.com",password="mita ypfc xjel khyy")
             demo.send_mail(to_mail=email,subject="text",body=f"Dear user, your account details are being processed.\n Email: {email}")
@@ -442,26 +368,24 @@ class HospitalsLiveLocation(APIView):
         return JsonResponse({"latitude": latitude, "longitude": longitude, "address": result})
 
 
-
-# distance from hospital panding
-
-
 class get_hospital_details(APIView):
     def get(self,request,hospital_name=None):
-        data = request.data
-        lat1 = data.get('lat1')
-        lon1 = data.get('lon1')
-        lat2 = data.get('lat2')
-        lon2 = data.get('lon2')
+        lat1 = request.GET.get('latitude', None)
+        lon1 = request.GET.get('longitude', None)
+       
         try:
-            if lat1 is None or lon1 is None or lat2 is None or lon2 is None:
+            if lat1 is None or lon1 is None:
                 return Response({"message": "Latitude or longitude values are missing."}, status=400)
-            distance,maps_link = calculate_distance(lat1, lon1, lat2, lon2)
 
-            if distance is not None:
-                if hospital_name is not None:
-                    data =mycol2.find_one({"hospital_name":hospital_name})
-
+            # if distance is not None:
+            if hospital_name is not None:
+                data =mycol2.find_one({"hospital_name":hospital_name})
+                location_dict = data.get('location', {})
+                lat2 = location_dict.get('latitude', None)
+                lon2 = location_dict.get('longitude', None)
+                distance,maps_link = calculate_distance(lat1, lon1, lat2, lon2)
+                
+                if distance is not None:
                     response ={
                         "hospital_name":hospital_name,
                         "address": data['location'],
@@ -473,15 +397,14 @@ class get_hospital_details(APIView):
                     }
                     return Response(response, status=status.HTTP_200_OK)
                 else:
-                    return Response({"message": "No hospital data found in the specified data."}, status=status.HTTP_404_NOT_FOUND)
-       
+                    return Response({"message": "Failed to calculate distance."}, status=500)
             else:
-                return Response({"message": "Failed to calculate distance."}, status=500)
+                return Response({"message": "No hospital data found in the specified data."}, status=status.HTTP_404_NOT_FOUND)
+       
             
         except Exception as e:
             logger.error(str(e))
             raise APIException(str(e))
-        
 
 from .permissions import CustomIsauthenticated, DriverCustomIsauthenticated, HospitalCustomIsauthenticated
 # views.py
@@ -494,8 +417,7 @@ class Userprofileview(APIView):
                 if user_type == 'user':
                     self.permission_classes = [CustomIsauthenticated]
                     user = mycol3.find_one({"_id": user_id})
-                    print(user_id,"kkkkkkkkkkkkkkkkk")
-                    print(user,"k---------------------")
+                    
                 elif user_type == 'driver':
                     self.permission_classes = [DriverCustomIsauthenticated]
                     user = mycol1.find_one({"_id": user_id})
@@ -515,3 +437,5 @@ class Userprofileview(APIView):
         except Exception as e:
             logger.error({str(e)})
             return Response({"error": str(e)}, status=500)
+
+

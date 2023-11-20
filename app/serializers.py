@@ -30,4 +30,5 @@ class Driver_EntrySerializer(serializers.ModelSerializer):
 class HospitalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hospital
+        # fields = ['license_img','landline','mobile','no_of_ambulances','established','supervisor_id_card','hospital_name','user_type','location']
         fields = '__all__'

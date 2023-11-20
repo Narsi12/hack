@@ -384,8 +384,8 @@ class Login_View(APIView):
 
 class NearHospitalsList(APIView):
     def get(self, request):
-        latitude = request.data.get("latitude")
-        longitude = request.data.get("longitude")
+        latitude = request.GET.get('latitude', None)
+        longitude = request.GET.get('longitude', None)
 
         api_key = 'AIzaSyBO0HZnIuHmIB7qalDQ-jTsT4bXbkcFLZM'
         gmaps = GoogleMaps(api_key)
@@ -459,7 +459,7 @@ class get_hospital_details(APIView):
             distance,maps_link = calculate_distance(lat1, lon1, lat2, lon2)
 
             if distance is not None:
-                if get_hospital_details is not None:
+                if hospital_name is not None:
                     data =mycol2.find_one({"hospital_name":hospital_name})
 
                     response ={

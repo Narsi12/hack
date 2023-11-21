@@ -74,7 +74,21 @@ class Hospital(CommonFields):
     status = models.CharField(choices=driver_and_hospital_status,max_length=100,blank=True, null=True,default="pending")
     hospital_name = models.CharField(max_length=200)
     user_type = models.CharField(max_length=20, default='hospital')
-    location = models.JSONField((dict))
+    location = models.JSONField()
+
+
+class long_lat_email(models.Model):
+    long = models.CharField(max_length=255)
+    lat = models.CharField(max_length=255)
+    email = models.EmailField()
+
+class AmbulanceRequiest(models.Model):
+    email = models.EmailField()
+    location = models.JSONField()
+    patient_name= models.CharField(max_length=255)
+    Image_patient=models.ImageField(upload_to='Image_patient/Image_patient/', null=True, blank=True)
+    condition= models.CharField(max_length=255)
+
 
 
 

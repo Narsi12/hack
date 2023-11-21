@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework import routers
-from .views import  ChangePassword,LogoutView,ForgotPassword,NewPassordGenerate ,RegistrationAPIView,NearHospitalsList,Login_View,HospitalsLiveLocation
-from .views import get_hospital_details,Userprofileview
+from .views import  ChangePassword,LogoutView,ForgotPassword,NewPassordGenerate ,RegistrationAPIView,NearHospitalsList,Login_View,get_address_from_long_lat
+from .views import get_hospital_details,Userprofileview ,PostCallLongLatEmail, Userprofileview_update
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
@@ -27,9 +27,8 @@ schema_view = get_schema_view(
 urlpatterns = [
    path(r'register_user/', RegistrationAPIView.as_view(), name='Register'),#new added
    path(r'near_hospitals_list/', NearHospitalsList.as_view(), name='Register'), #new added
-   
    path(r'login_view/', Login_View.as_view(), name='LoginView'), #new added
-   path(r'get_address_from_long_lat/',HospitalsLiveLocation.as_view(),name='HospitalsLivelocatio'),#new added
+   path(r'get_address_from_long_lat/',get_address_from_long_lat.as_view(),name='get_address_from_long_lat'),#new added
    path(r'get_hospital_details/<str:hospital_name>',get_hospital_details.as_view(),name='GetHospitalsDetails'),#new added
    path(r'logout/', LogoutView.as_view(),name='Logout'),
    path(r'Userprofileview/<str:user_type>',Userprofileview.as_view(),name='Userprofileview'),#new added
@@ -40,6 +39,8 @@ urlpatterns = [
    path(r'redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
+   path(r'PostCallLongLatEmail/',PostCallLongLatEmail.as_view(),name='PostCallLongLatEmail'),
+   path(r'Userprofileview_update/<str:user_type>',Userprofileview_update.as_view(),name='Userprofileview_update')
 ]
 
 

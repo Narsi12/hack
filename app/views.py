@@ -187,8 +187,8 @@ class ForgotPassword(APIView):
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import USER_Entry, Driver_Entry, Hospital
-from .serializers import USER_EntrySerializer, Driver_EntrySerializer, HospitalSerializer
+from .models import USER_Entry, Driver_Entry, Hospital, long_lat_email
+from .serializers import USER_EntrySerializer, Driver_EntrySerializer, HospitalSerializer, LongLatEmailSerializer, AmbulanceRequiestCallSerializer
 from mail_notification.connection import MailConfig
 from django.core.mail import send_mail
 from googlemaps import Client as GoogleMaps
@@ -286,13 +286,10 @@ class Login_View(APIView):
             })
 
             collections = [mycol1, mycol2, mycol3]
-
             for collection in collections:
                 details = collection.find_one({"email": email})
                 if details:
                     usertype = details.get('user_type')
-            
-            # logedin = details['logged_in']
 
             return JsonResponse({
                     "status": "success",
@@ -301,7 +298,6 @@ class Login_View(APIView):
                     "refresh_token": refresh_token,
                     "email":email,
                     "usertype":usertype
-                    # "loggedin":logedin
                 })
         else:
             return JsonResponse({"message":"invalid data"})
@@ -315,12 +311,9 @@ class NearHospitalsList(APIView):
 
         api_key = 'AIzaSyBO0HZnIuHmIB7qalDQ-jTsT4bXbkcFLZM'
         gmaps = GoogleMaps(api_key)
-
         radius = 5000
         location = (latitude, longitude)
-
         url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={latitude},{longitude}&radius={radius}&type=hospital&key={api_key}"
-
         response = requests.get(url)
 
         if response.status_code == 200:
@@ -362,7 +355,7 @@ class NearHospitalsList(APIView):
 
 from .decorator import address_decorator
 
-class HospitalsLiveLocation(APIView):
+class get_address_from_long_lat(APIView):
     @address_decorator
     def get(self, request, latitude, longitude, result):
         return JsonResponse({"latitude": latitude, "longitude": longitude, "address": result})
@@ -438,4 +431,100 @@ class Userprofileview(APIView):
             logger.error({str(e)})
             return Response({"error": str(e)}, status=500)
 
+from django.core.exceptions import MultipleObjectsReturned
 
+
+class PostCallLongLatEmail(APIView):
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        email =data['email']
+        serializer = LongLatEmailSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    def get(self, request):
+        email = request.GET.get('email', None)
+        existing_user = long_lat_email.objects.filter(email=email).first()
+        if existing_user is not None:
+            return JsonResponse({'Message': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            data = long_lat_email.objects.get(email=email)
+            serializer = LongLatEmailSerializer(data)
+            return Response(serializer.data)
+        except long_lat_email.DoesNotExist:
+            return Response({"message": "email not found"}, status=status.HTTP_404_NOT_FOUND)
+        except MultipleObjectsReturned:
+            return Response({"message": "Multiple objects found for the given email"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AmbulanceRequiestCall(APIView):
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        serializer = AmbulanceRequiestCallSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class Userprofileview_update(APIView):
+    def put(self, request, user_type=None):
+        try:
+            user_id = ObjectId(request.user._id)
+            print(user_id)
+             
+            if user_type is not None:
+                if user_type == 'user':
+                    self.permission_classes = [CustomIsauthenticated]
+                    info = mycol3.find_one({"_id":user_id})
+                    email = info['email']
+                     
+                    user_data = request.data
+                    user = mycol3.find_one_and_update({"_id": user_id,"email":email},
+                                         {
+                                             "$set":{
+                                                 "name":user_data['name'],"phone_number":user_data["phone_number"],"emergency_phone_number":user_data['emergency_phone_number'],
+                                                 "location":user_data['location']
+                                             }
+                                         })
+                elif user_type == 'driver':
+                    self.permission_classes = [DriverCustomIsauthenticated]
+                    driver_data = request.data
+                    # id_card_file = request.FILES.get('id_card')
+                    # hospital_license_file = request.FILES.get('hospital_license')
+                    info1 = mycol1.find_one({"_id": user_id})
+                    email = info1['email']
+                    user = mycol1.find_one_and_update({"_id": user_id,"email":email},
+                                         {
+                                             "$set":{
+                                                 "name":driver_data['name'],"hospital_name":driver_data["hospital_name"],
+                                                 "phone_num":driver_data['phone_num'],"vehicle_num":driver_data['vehicle_num']
+                                             }
+                                         })
+                     
+ 
+                elif user_type == 'hospital':
+                    self.permission_classes = [HospitalCustomIsauthenticated]
+                    hospital_data = request.data
+                    info2 = mycol2.find_one({"_id": user_id})
+                    print(info2)
+                    email = info2['email']
+                    user = mycol2.find_one_and_update({"_id": user_id,"email":email},
+                                         {
+                                             "$set":{
+                                                 "mobile":hospital_data['mobile'],"no_of_ambulances":hospital_data["no_of_ambulances"]
+                                             }
+                                         })
+                     
+                else:
+                    return Response({"error": "Invalid user_type"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({"message": "user_type values are missing."}, status=400)
+ 
+            if user is not None:
+                user['_id'] = str(user['_id'])
+                return Response({"Data": user}, status=status.HTTP_200_OK)
+ 
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)

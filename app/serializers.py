@@ -15,7 +15,7 @@ class USER_Serializer(serializers.ModelSerializer):
 
 
 from rest_framework import serializers
-from .models import USER_Entry, Driver_Entry, Hospital
+from .models import USER_Entry, Driver_Entry, Hospital ,long_lat_email, AmbulanceRequiest
 
 class USER_EntrySerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,3 +32,14 @@ class HospitalSerializer(serializers.ModelSerializer):
         model = Hospital
         # fields = ['license_img','landline','mobile','no_of_ambulances','established','supervisor_id_card','hospital_name','user_type','location']
         fields = '__all__'
+
+class LongLatEmailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = long_lat_email
+        fields = ['long','lat','email']
+
+class AmbulanceRequiestCallSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AmbulanceRequiest
+        fields= '__all__'

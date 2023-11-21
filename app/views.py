@@ -508,7 +508,6 @@ class Userprofileview_update(APIView):
                     self.permission_classes = [HospitalCustomIsauthenticated]
                     hospital_data = request.data
                     info2 = mycol2.find_one({"_id": user_id})
-                    print(info2)
                     email = info2['email']
                     user = mycol2.find_one_and_update({"_id": user_id,"email":email},
                                          {
@@ -528,3 +527,4 @@ class Userprofileview_update(APIView):
  
         except Exception as e:
             return Response({"error": str(e)}, status=500)
+        

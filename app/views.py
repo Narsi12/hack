@@ -43,7 +43,7 @@ JWT_REFRESH_TOKEN_EXPIRATION = 1440
 JWT_ALGORITHM = 'HS256'
 
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-mydb = myclient["ambulance_tracker"]
+mydb = myclient["kalyani"]
 mycol1 = mydb['app_driver_entry']
 mycol2 = mydb['app_hospital']
 mycol3 = mydb['app_user_entry']

@@ -306,19 +306,20 @@ class Login_View(APIView):
 
 class NearHospitalsList(APIView):
     def get(self, request):
-        latitude = request.GET.get('latitude', None)
-        longitude = request.GET.get('longitude', None)
-
+        latitude = request.data.get("latitude")
+        longitude = request.data.get("longitude")
         api_key = 'AIzaSyBO0HZnIuHmIB7qalDQ-jTsT4bXbkcFLZM'
         gmaps = GoogleMaps(api_key)
         radius = 5000
         location = (latitude, longitude)
+ 
         url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={latitude},{longitude}&radius={radius}&type=hospital&key={api_key}"
+ 
         response = requests.get(url)
-
+ 
         if response.status_code == 200:
             hospitals_data = response.json()
-        
+       
             if 'results' in hospitals_data:
                 nearby_hospitals = hospitals_data['results']
                 print("\nNearby Hospitals:")
@@ -329,13 +330,13 @@ class NearHospitalsList(APIView):
                     hospital_location = hospital['geometry']['location']
                     hospital_lat = hospital_location['lat']
                     hospital_lng = hospital_location['lng']
-
+ 
                     ambulance_avb = mycol2.find_one({"hospital_name":hospital_name})
                     if ambulance_avb is not None:
                         ambulance = "False" if ambulance_avb['no_of_ambulances'] =="0" else "True"
                     else:
                         ambulance = "hospital not rejected"
-
+ 
                     hospital_info = {
                         "name": hospital_name,
                         "latitude": hospital_lat,
@@ -344,7 +345,7 @@ class NearHospitalsList(APIView):
                         "ambulance_available": ambulance
                     }
                     hospitals_json.append(hospital_info)
-
+ 
                 return Response(hospitals_json, status=status.HTTP_200_OK)
             else:
                 return Response({"message": "No hospital data found in the specified radius."}, status=status.HTTP_404_NOT_FOUND)

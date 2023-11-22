@@ -91,7 +91,7 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 DATABASES = DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'ambulance_tracker',
+        'NAME': 'ambulance_patient',
     }
 }
 
@@ -169,4 +169,4 @@ MEDIA_URL = '/media/'
 # MEDIA_ROOT = os.path.join(BASE_DIR, r'D:\AI.3_hackathon\patient_ambulence_relation\app\users')
 
 
-MEDIA_ROOT = os.path.join(BASE_DIR, r'D:\hackthon\hack\app\users')
+MEDIA_ROOT = os.path.join(BASE_DIR, r'D:hacktt\hack\app\users')

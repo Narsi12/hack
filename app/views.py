@@ -364,10 +364,12 @@ class get_address_from_long_lat(APIView):
 
 
 class get_hospital_details(APIView):
-    def get(self,request,hospital_name=None):
+    def post(self,request,hospital_name=None):
         lat1 = request.GET.get('latitude', None)
         lon1 = request.GET.get('longitude', None)
-       
+        print(hospital_name)
+        data =mycol2.find_one({"hospital_name":hospital_name})
+        print(data)
         try:
             if lat1 is None or lon1 is None:
                 return Response({"message": "Latitude or longitude values are missing."}, status=400)
@@ -375,6 +377,7 @@ class get_hospital_details(APIView):
             # if distance is not None:
             if hospital_name is not None:
                 data =mycol2.find_one({"hospital_name":hospital_name})
+                print(data)
                 location_dict = data.get('location', {})
                 lat2 = location_dict.get('latitude', None)
                 lon2 = location_dict.get('longitude', None)
@@ -398,7 +401,6 @@ class get_hospital_details(APIView):
        
             
         except Exception as e:
-            logger.error(str(e))
             raise APIException(str(e))
 
 from .permissions import CustomIsauthenticated, DriverCustomIsauthenticated, HospitalCustomIsauthenticated

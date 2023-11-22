@@ -202,6 +202,7 @@ mycol1 = mydb['app_driver_entry']
 mycol2 = mydb['app_hospital']
 mycol3 = mydb['app_user_entry']
 tokens = mydb['tokens']
+user_requests = mydb["user_raise_request"]
 
 
 
@@ -306,8 +307,8 @@ class Login_View(APIView):
 
 class NearHospitalsList(APIView):
     def get(self, request):
-        latitude = request.data.get("latitude")
-        longitude = request.data.get("longitude")
+        latitude = request.GET.get("latitude")
+        longitude = request.GET.get("longitude")
         api_key = 'AIzaSyBO0HZnIuHmIB7qalDQ-jTsT4bXbkcFLZM'
         gmaps = GoogleMaps(api_key)
         radius = 5000
@@ -529,3 +530,102 @@ class Userprofileview_update(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=500)
         
+class RaiseRequest(APIView):
+    permission_classes = [CustomIsauthenticated]
+
+    @address_decorator
+    def post(self, request, latitude=None, longitude=None, result=None):
+        user_id = request.user._id
+        user = mycol3.find_one({"_id": user_id})
+        registered_location = user.get("location", None)
+        latitude = request.data.get("latitude")
+        longitude = request.data.get("longitude")
+        hospital = request.data.get("hospital",None)
+
+        if hospital is not None:
+                print(hospital)
+                data =mycol2.find_one({"hospital_name":hospital})
+                location_dict = data.get('location', {})
+                lat2 = location_dict.get('latitude', None)
+                lon2 = location_dict.get('longitude', None)
+                distance,maps_link = calculate_distance(latitude, longitude, lat2, lon2)
+
+        
+        data = {
+            "name": user["name"],
+            "phone_number": user["phone_number"],
+            "registered_location": registered_location,
+            "route_map": {
+                "maps_link":maps_link
+            },
+            "distance": distance,
+        }
+        existing_user = user_requests.find_one({"user_id": user_id})
+
+        if existing_user:
+            return Response({"error": "User request already exists."}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            user_requests.insert_one({
+                "user_id": user_id,
+                "name": user["name"],
+                "phone_number": user["phone_number"],
+                "registered_location": registered_location,
+                "route_map": {
+                    "maps_link": maps_link
+                },
+                "distance": distance,
+            })
+
+            return Response(data)
+        
+
+
+class hospital_Dash_bord(APIView):
+    def get(self, request):
+        user = user_requests.find({})
+        complete_info = []
+        
+        for patient in user:
+            patient_info = {
+                'user_id': str(patient['user_id']),
+                'name': patient['name'],
+                'phone_number': patient['phone_number'],
+                'registered_location': {
+                    'latitude': patient['registered_location']['latitude'],
+                    'longitude': patient['registered_location']['longitude']
+                },
+                'route_map': {
+                    'maps_link': patient['route_map']['maps_link']
+                },
+                'distance': patient['distance'],
+            }
+            complete_info.append(patient_info)
+        
+        return Response(complete_info)
+
+
+class hospital_request_Accept(APIView):
+    permission_classes = [HospitalCustomIsauthenticated]
+
+    def post(self, request):
+        hospital_user_id = request.user._id
+        request_status = "accepted"
+        patient_user_id = request.data.get("patient_user_id", None)
+        patient_id = ObjectId(patient_user_id)
+        if not patient_user_id:
+            return Response({'error': 'Patient user ID is missing in the request'}, status=status.HTTP_400_BAD_REQUEST)
+        user_request = user_requests.find_one_and_update(
+            {"user_id": patient_id},
+            {
+                "$set": {
+                    "status": request_status,
+                    "hospital_id": hospital_user_id
+                }
+            }
+        )
+        if user_request:
+            return Response({'msg': 'User request is accepted'})
+        else:
+            return Response({'error': 'User request not found'}, status=status.HTTP_404_NOT_FOUND)
+
+

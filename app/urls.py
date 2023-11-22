@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework import routers
-from .views import  ChangePassword,LogoutView,ForgotPassword,NewPassordGenerate ,RegistrationAPIView,NearHospitalsList,Login_View,get_address_from_long_lat
-from .views import get_hospital_details,Userprofileview ,PostCallLongLatEmail, Userprofileview_update
+from .views import  ChangePassword,LogoutView,ForgotPassword,NewPassordGenerate ,RegistrationAPIView,NearHospitalsList,Login_View,get_address_from_long_lat, get_hospital_details,Userprofileview ,PostCallLongLatEmail, Userprofileview_update, RaiseRequest, hospital_request_Accept, hospital_Dash_bord
+# from .views import get_hospital_details,Userprofileview ,PostCallLongLatEmail, Userprofileview_update
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
@@ -40,7 +40,10 @@ urlpatterns = [
    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
    path(r'PostCallLongLatEmail/',PostCallLongLatEmail.as_view(),name='PostCallLongLatEmail'),
-   path(r'Userprofileview_update/<str:user_type>',Userprofileview_update.as_view(),name='Userprofileview_update')
+   path(r'Userprofileview_update/<str:user_type>',Userprofileview_update.as_view(),name='Userprofileview_update'),
+   path(r'user_request/', RaiseRequest.as_view(), name='Register'),
+   path(r'accepted_user_request/', hospital_request_Accept.as_view(), name='Register'),
+   path(r'get_all_user_requests/', hospital_Dash_bord.as_view(), name='Register'),
 ]
 
 
